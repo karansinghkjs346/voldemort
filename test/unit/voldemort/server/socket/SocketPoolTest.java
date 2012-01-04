@@ -34,7 +34,6 @@ import voldemort.ServerTestUtils;
 import voldemort.client.protocol.RequestFormatType;
 import voldemort.client.protocol.admin.SocketAndStreams;
 import voldemort.client.protocol.admin.SocketPool;
-import voldemort.server.AbstractSocketService;
 import voldemort.server.StoreRepository;
 import voldemort.server.protocol.RequestHandlerFactory;
 import voldemort.store.socket.SocketDestination;

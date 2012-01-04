@@ -31,7 +31,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import voldemort.ServerTestUtils;
 import voldemort.serialization.SerializerFactory;
-import voldemort.server.AbstractSocketService;
+import voldemort.server.socket.AbstractSocketService;
 
 /**
  * 

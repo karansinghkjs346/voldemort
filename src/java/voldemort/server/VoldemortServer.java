@@ -36,14 +36,13 @@ import voldemort.cluster.Node;
 import voldemort.server.gossip.GossipService;
 import voldemort.server.http.HttpService;
 import voldemort.server.jmx.JmxService;
-import voldemort.server.niosocket.NioSocketService;
 import voldemort.server.protocol.RequestHandlerFactory;
 import voldemort.server.protocol.SocketRequestHandlerFactory;
 import voldemort.server.protocol.admin.AsyncOperationService;
 import voldemort.server.rebalance.Rebalancer;
 import voldemort.server.rebalance.RebalancerService;
 import voldemort.server.scheduler.SchedulerService;
-import voldemort.server.socket.SocketService;
+import voldemort.server.socket.SocketServiceFactory;
 import voldemort.server.storage.StorageService;
 import voldemort.store.configuration.ConfigurationStorageEngine;
 import voldemort.store.metadata.MetadataStore;
@@ -173,25 +172,9 @@ public class VoldemortServer extends AbstractService {
                                                                                                 this.voldemortConfig,
                                                                                                 this.asyncService,
                                                                                                 null);
-
-            if(voldemortConfig.getUseNioConnector()) {
-                logger.info("Using NIO Connector.");
-                services.add(new NioSocketService(socketRequestHandlerFactory,
-                                                  identityNode.getSocketPort(),
-                                                  voldemortConfig.getSocketBufferSize(),
-                                                  voldemortConfig.getNioConnectorSelectors(),
-                                                  "nio-socket-server",
-                                                  voldemortConfig.isJmxEnabled()));
-            } else {
-                logger.info("Using BIO Connector.");
-                services.add(new SocketService(socketRequestHandlerFactory,
-                                               identityNode.getSocketPort(),
-                                               voldemortConfig.getCoreThreads(),
-                                               voldemortConfig.getMaxThreads(),
-                                               voldemortConfig.getSocketBufferSize(),
-                                               "socket-server",
-                                               voldemortConfig.isJmxEnabled()));
-            }
+            services.add(SocketServiceFactory.newCoreSocketService(identityNode,
+                                                                   this.voldemortConfig,
+                                                                   socketRequestHandlerFactory));
         }
 
         if(voldemortConfig.isAdminServerEnabled()) {
@@ -212,25 +195,9 @@ public class VoldemortServer extends AbstractService {
                                                                                                      this.voldemortConfig,
                                                                                                      this.asyncService,
                                                                                                      rebalancer);
-
-            if(voldemortConfig.getUseNioConnector()) {
-                logger.info("Using NIO Connector for Admin Service.");
-                services.add(new NioSocketService(adminRequestHandlerFactory,
-                                                  identityNode.getAdminPort(),
-                                                  voldemortConfig.getAdminSocketBufferSize(),
-                                                  voldemortConfig.getNioAdminConnectorSelectors(),
-                                                  "admin-server",
-                                                  voldemortConfig.isJmxEnabled()));
-            } else {
-                logger.info("Using BIO Connector for Admin Service.");
-                services.add(new SocketService(adminRequestHandlerFactory,
-                                               identityNode.getAdminPort(),
-                                               voldemortConfig.getAdminCoreThreads(),
-                                               voldemortConfig.getAdminMaxThreads(),
-                                               voldemortConfig.getAdminSocketBufferSize(),
-                                               "admin-server",
-                                               voldemortConfig.isJmxEnabled()));
-            }
+            services.add(SocketServiceFactory.newAdminSocketService(identityNode,
+                                                                    this.voldemortConfig,
+                                                                    adminRequestHandlerFactory));
         }
 
         if(voldemortConfig.isGossipEnabled()) {

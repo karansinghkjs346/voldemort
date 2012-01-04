@@ -15,10 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import voldemort.VoldemortException;
-import voldemort.server.AbstractSocketService;
 import voldemort.server.ServiceType;
 import voldemort.server.VoldemortServer;
 import voldemort.server.http.VoldemortServletContextListener;
+import voldemort.server.socket.AbstractSocketService;
 import voldemort.store.Store;
 import voldemort.store.stats.RequestCounter;
 import voldemort.store.stats.StatTrackingStore;

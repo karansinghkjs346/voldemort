@@ -31,10 +31,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import voldemort.VoldemortException;
-import voldemort.server.AbstractSocketService;
-import voldemort.server.ServiceType;
 import voldemort.server.StatusManager;
 import voldemort.server.protocol.RequestHandlerFactory;
+import voldemort.server.socket.AbstractSocketService;
+import voldemort.server.socket.SocketServiceConfig;
 import voldemort.utils.DaemonThreadFactory;
 
 /**
@@ -59,33 +59,38 @@ public class NioSocketService extends AbstractSocketService {
 
     private static final int SHUTDOWN_TIMEOUT_MS = 15000;
 
-    private final RequestHandlerFactory requestHandlerFactory;
+    private RequestHandlerFactory requestHandlerFactory;
 
-    private final ServerSocketChannel serverSocketChannel;
+    private ServerSocketChannel serverSocketChannel;
 
-    private final InetSocketAddress endpoint;
+    private InetSocketAddress endpoint;
 
-    private final NioSelectorManager[] selectorManagers;
+    private NioSelectorManager[] selectorManagers;
 
-    private final ExecutorService selectorManagerThreadPool;
+    private ExecutorService selectorManagerThreadPool;
 
-    private final int socketBufferSize;
+    private int socketBufferSize;
 
-    private final StatusManager statusManager;
+    private StatusManager statusManager;
 
-    private final Thread acceptorThread;
+    private Thread acceptorThread;
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private Logger logger = Logger.getLogger(getClass());
 
-    public NioSocketService(RequestHandlerFactory requestHandlerFactory,
-                            int port,
-                            int socketBufferSize,
-                            int selectors,
-                            String serviceName,
-                            boolean enableJmx) {
-        super(ServiceType.SOCKET, port, serviceName, enableJmx);
-        this.requestHandlerFactory = requestHandlerFactory;
-        this.socketBufferSize = socketBufferSize;
+    public NioSocketService() {
+        super();
+    }
+
+    public StatusManager getStatusManager() {
+        return statusManager;
+    }
+
+    @Override
+    public void configure(SocketServiceConfig config, RequestHandlerFactory reqHandlerFactory) {
+        super.configure(config, reqHandlerFactory);
+
+        this.requestHandlerFactory = reqHandlerFactory;
+        this.socketBufferSize = config.getSocketBufferSize();
 
         try {
             this.serverSocketChannel = ServerSocketChannel.open();
@@ -93,9 +98,9 @@ public class NioSocketService extends AbstractSocketService {
             throw new VoldemortException(e);
         }
 
-        this.endpoint = new InetSocketAddress(port);
+        this.endpoint = new InetSocketAddress(config.getPort());
 
-        this.selectorManagers = new NioSelectorManager[selectors];
+        this.selectorManagers = new NioSelectorManager[config.getSelectors()];
         this.selectorManagerThreadPool = Executors.newFixedThreadPool(selectorManagers.length,
                                                                       new DaemonThreadFactory("voldemort-niosocket-server"));
         this.statusManager = new StatusManager((ThreadPoolExecutor) this.selectorManagerThreadPool);
@@ -103,15 +108,10 @@ public class NioSocketService extends AbstractSocketService {
     }
 
     @Override
-    public StatusManager getStatusManager() {
-        return statusManager;
-    }
-
-    @Override
     protected void startInner() {
         if(logger.isEnabledFor(Level.INFO))
-            logger.info("Starting Voldemort NIO socket server (" + serviceName + ") on port "
-                        + port);
+            logger.info("Starting Voldemort NIO socket server (" + this.getServiceName()
+                        + ") on port " + this.getPort());
 
         try {
             for(int i = 0; i < selectorManagers.length; i++) {
@@ -136,8 +136,8 @@ public class NioSocketService extends AbstractSocketService {
     @Override
     protected void stopInner() {
         if(logger.isEnabledFor(Level.INFO))
-            logger.info("Stopping Voldemort NIO socket server (" + serviceName + ") on port "
-                        + port);
+            logger.info("Stopping Voldemort NIO socket server (" + this.getServiceName()
+                        + ") on port " + this.getPort());
 
         try {
             // Signal the thread to stop accepting new connections...
@@ -215,7 +215,7 @@ public class NioSocketService extends AbstractSocketService {
 
         public void run() {
             if(logger.isInfoEnabled())
-                logger.info("Server now listening for connections on port " + port);
+                logger.info("Server now listening for connections on port " + getPort());
 
             AtomicInteger counter = new AtomicInteger();
 
@@ -253,7 +253,7 @@ public class NioSocketService extends AbstractSocketService {
             }
 
             if(logger.isInfoEnabled())
-                logger.info("Server has stopped listening for connections on port " + port);
+                logger.info("Server has stopped listening for connections on port " + getPort());
         }
 
     }

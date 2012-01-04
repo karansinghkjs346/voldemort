@@ -32,7 +32,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import voldemort.ServerTestUtils;
 import voldemort.client.protocol.RequestFormatType;
-import voldemort.server.AbstractSocketService;
 import voldemort.server.StoreRepository;
 import voldemort.server.protocol.RequestHandlerFactory;
 import voldemort.store.socket.SocketDestination;

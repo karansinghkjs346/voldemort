@@ -16,9 +16,8 @@
 
 package voldemort.server.socket;
 
-import voldemort.server.AbstractSocketService;
-import voldemort.server.ServiceType;
 import voldemort.server.StatusManager;
+import voldemort.server.VoldemortService;
 import voldemort.server.protocol.RequestHandlerFactory;
 
 /**
@@ -26,40 +25,28 @@ import voldemort.server.protocol.RequestHandlerFactory;
  * 
  */
 
-public class SocketService extends AbstractSocketService {
+public interface SocketService extends VoldemortService {
 
-    private final SocketServer server;
+    /**
+     * Configures the socket service with the given configuration information
+     * and request handler factory. The specifics of the configuration are
+     * implementation specific, but in general socket services can't be used
+     * until configure is successfully called once. Also, most services may be
+     * configured at most one time.
+     * 
+     * @param config The socket service configuration object.
+     * @param reqHandlerFactory The request handler factory to create objects
+     *        for handling incoming requests.
+     * 
+     * @author Robert Butler
+     */
+    void configure(SocketServiceConfig config, RequestHandlerFactory reqHandlerFactory);
 
-    public SocketService(RequestHandlerFactory requestHandlerFactory,
-                         int port,
-                         int coreConnections,
-                         int maxConnections,
-                         int socketBufferSize,
-                         String serviceName,
-                         boolean enableJmx) {
-        super(ServiceType.SOCKET, port, serviceName, enableJmx);
-        this.server = new SocketServer(port,
-                                       coreConnections,
-                                       maxConnections,
-                                       socketBufferSize,
-                                       requestHandlerFactory,
-                                       serviceName);
-    }
+    /**
+     * Returns a StatusManager instance for use with status reporting tools.
+     * 
+     * @return StatusManager
+     */
 
-    @Override
-    public StatusManager getStatusManager() {
-        return server.getStatusManager();
-    }
-
-    @Override
-    protected void startInner() {
-        this.server.start();
-        this.server.awaitStartupCompletion();
-        enableJmx(server);
-    }
-
-    @Override
-    protected void stopInner() {
-        this.server.shutdown();
-    }
+    StatusManager getStatusManager();
 }

@@ -35,7 +35,7 @@ import voldemort.ServerTestUtils;
 import voldemort.TestUtils;
 import voldemort.VoldemortTestConstants;
 import voldemort.client.protocol.RequestFormatType;
-import voldemort.server.AbstractSocketService;
+import voldemort.server.socket.AbstractSocketService;
 import voldemort.store.AbstractByteArrayStoreTest;
 import voldemort.store.Store;
 import voldemort.store.socket.clientrequest.ClientRequestExecutorPool;

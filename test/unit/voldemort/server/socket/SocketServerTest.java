@@ -13,7 +13,6 @@ import org.junit.runners.Parameterized.Parameters;
 import voldemort.ServerTestUtils;
 import voldemort.VoldemortException;
 import voldemort.VoldemortTestConstants;
-import voldemort.server.AbstractSocketService;
 
 @RunWith(Parameterized.class)
 public class SocketServerTest {
